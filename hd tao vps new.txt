@@ -1,0 +1,152 @@
+✔️ Trạng thái hiện tại
+
+Hệ thống đã hoàn chỉnh:
+
+VPS chạy ✔️
+Backend Node.js ✔️
+PostgreSQL ✔️
+PM2 (auto restart) ✔️
+Nginx reverse proxy ✔️
+Domain ✔️
+HTTPS (SSL) ✔️
+
+👉 Có thể deploy production cơ bản.
+
+📘 TÓM TẮT FULL QUY TRÌNH (LƯU LẠI DÙNG LẠI)
+1️⃣ Tạo VPS (Alibaba Cloud)
+Chọn:
+Region: Singapore
+OS: Ubuntu 22.04
+1 vCPU / 2GB RAM
+Bật:
+Public IP
+Tạo SSH Key
+2️⃣ Mở port (QUAN TRỌNG)
+
+Security Group:
+
+Port	Mục đích
+22	SSH
+80	HTTP
+443	HTTPS
+3000	test backend (tạm thời)
+3️⃣ SSH vào VPS
+ssh -i vps.pem root@IP
+4️⃣ Setup server
+apt update && apt upgrade -y
+5️⃣ Cài Node.js
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install nodejs -y
+
+Check:
+
+node -v
+npm -v
+6️⃣ Cài PostgreSQL
+apt install postgresql postgresql-contrib -y
+Tạo DB
+sudo -u postgres psql
+CREATE DATABASE mydb;
+CREATE USER myuser WITH PASSWORD '123456';
+GRANT ALL PRIVILEGES ON DATABASE mydb TO myuser;
+7️⃣ Tạo backend Node.js
+mkdir app && cd app
+npm init -y
+npm install express pg cors
+nano index.js
+Code cơ bản
+const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Backend is running!');
+});
+
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
+});
+8️⃣ Chạy backend
+node index.js
+
+Test:
+
+http://IP:3000
+9️⃣ Cài PM2 (production)
+npm install -g pm2
+pm2 start index.js
+pm2 save
+pm2 startup
+🔟 Cài Nginx
+apt install nginx -y
+Config reverse proxy
+nano /etc/nginx/sites-available/default
+server {
+    listen 80;
+    server_name abcfb.site www.abcfb.site;
+
+    location / {
+        proxy_pass http://localhost:3000;
+    }
+}
+
+Restart:
+
+nginx -t
+systemctl restart nginx
+1️⃣1️⃣ Trỏ domain
+
+DNS:
+
+Type	Name	Value
+A	@	IP VPS
+A	www	IP VPS
+1️⃣2️⃣ Cài SSL (HTTPS)
+apt install certbot python3-certbot-nginx -y
+certbot --nginx --register-unsafely-without-email
+
+Nhập:
+
+abcfb.site www.abcfb.site
+
+Chọn:
+
+Redirect → 2
+1️⃣3️⃣ Fix lỗi thường gặp
+❌ HTTPS timeout → chưa mở port 443
+❌ Certbot lỗi → thiếu server_name
+❌ SSH lỗi key → permission file
+🎯 KẾT QUẢ CUỐI
+
+Truy cập:
+
+https://domain.com
+
+✔️ chạy backend
+✔️ có SSL
+✔️ production ready
+
+🚀 NÂNG CẤP (nếu muốn)
+CORS domain chuẩn
+Deploy frontend (React)
+CI/CD auto deploy
+Redis cache
+Fail2ban (chống hack)
+Docker (pro hơn)
+⚠️ MẸO QUAN TRỌNG
+
+👉 Luôn nhớ 3 thứ:
+
+Mở port (80, 443)
+server_name đúng domain
+Nginx proxy → localhost:3000
+🎯 KẾT LUẬN
+
+Bạn vừa làm được:
+
+👉 Deploy backend full stack từ 0 → production
+👉 Kỹ năng này dùng được cho:
+
+SaaS
+Web app
+Bot
+API service

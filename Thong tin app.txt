@@ -1,0 +1,185 @@
+📋 MÔ TẢ DỰ ÁN: BOT_MES - Facebook Messenger Dashboard
+TỔNG QUAN
+Hệ thống quản lý tin nhắn Facebook tập trung. Khi khách hàng nhắn tin Messenger hoặc bình luận vào Facebook Page, tin nhắn hiện real-time lên dashboard web để admin xử lý, reply và quản lý.
+
+KIẾN TRÚC HỆ THỐNG
+Facebook Page
+     │
+     │ Webhook (HTTPS)
+     ▼
+Backend Node.js (port 3000)
+     │── PostgreSQL Database
+     │── Socket.IO (real-time)
+     ▼
+React Dashboard (https://abcfb.site)
+HẠ TẦNG
+VPS: Ubuntu 22.04, RAM 1.7GB, Disk 40GB, IP: 47.84.186.244
+Domain: https://abcfb.site (SSL Let's Encrypt)
+Process Manager: PM2 (app name: botmes-api)
+Web Server: Nginx (reverse proxy)
+Database: PostgreSQL 14 (local, database: botmes, user: postgres)
+SSH: ssh -i vps.pem root@47.84.186.244
+CẤU TRÚC THƯ MỤC TRÊN VPS
+/root/
+├── app/                        ← Backend Node.js
+│   ├── index.js                ← File chính (entry point)
+│   ├── package.json
+│   ├── setup-database.js       ← Script tạo bảng DB
+│   ├── .env                    ← Biến môi trường
+│   ├── uploads/                ← File upload tạm
+│   └── node_modules/
+│
+└── dashboard/                  ← Frontend React
+    ├── build/                  ← Production build (Nginx serve)
+    ├── src/
+    │   ├── components/
+    │   │   ├── ChatWindow.jsx
+    │   │   ├── Sidebar.jsx
+    │   │   ├── LabelManager.jsx
+    │   │   ├── QuickReplyManager.jsx
+    │   │   └── NotificationSettings.jsx
+    │   ├── pages/
+    │   │   └── Dashboard.jsx
+    │   ├── services/
+    │   │   ├── api.js
+    │   │   └── socket.js
+    │   └── utils/
+    │       ├── offlineQueue.js
+    │       ├── notification.js
+    │       └── pushNotifications.js
+    ├── public/
+    ├── package.json
+    └── .env
+CẤU TRÚC THƯ MỤC TRÊN PC (Windows)
+D:\Bot_Mes\
+├── fb-telegram-bot\            ← Source backend
+│   ├── index.js
+│   ├── package.json
+│   ├── setup-database.js
+│   └── .env
+├── dashboard\                  ← Source frontend
+│   ├── src\
+│   ├── public\
+│   ├── package.json
+│   └── .env
+└── vps.pem                     ← SSH key
+BACKEND (/root/app/index.js)
+Tech Stack
+Node.js + Express 5
+PostgreSQL (pg)
+Socket.IO 4
+Multer (upload file)
+google-translate-api-x (dịch tự động miễn phí)
+Axios
+CORS
+dotenv
+Tính năng
+Nhận tin nhắn Messenger qua Facebook Webhook
+Nhận bình luận từ Facebook Page feed
+Tự động dịch tin nhắn khách → tiếng Việt
+Tự động dịch tin nhắn admin → tiếng Anh trước khi gửi
+Real-time push đến dashboard qua Socket.IO
+Upload file/media gửi cho khách
+Reply bình luận trực tiếp
+Gửi Messenger từ bình luận
+File .env
+PORT=3000
+NODE_ENV=production
+DATABASE_URL=postgresql://postgres:Matkhau1@localhost:5432/botmes
+FB_APP_ID=1082833653702860
+FB_APP_SECRET=c6afd6ea816924671cb6dc5792e70148
+FB_VERIFY_TOKEN=jmcanvas
+PAGE_1_ID=108990475159622
+PAGE_1_NAME=JMCanvas-Nekko
+PAGE_1_TOKEN=EAAPY1NtHoMwBP....(token đầy đủ)
+OPENAI_API_KEY=
+FRONTEND_URL=https://abcfb.site
+API Endpoints
+Method	Endpoint	Chức năng
+GET	/health	Health check
+GET/POST	/facebook/webhook	Facebook webhook
+GET	/api/conversations	Danh sách hội thoại
+GET	/api/conversations/:id/messages	Tin nhắn của 1 khách
+POST	/api/conversations/:id/send	Gửi tin nhắn Messenger
+POST	/api/conversations/:id/reply-comment	Reply bình luận
+POST	/api/conversations/:id/send-from-comment	Gửi Messenger từ comment
+POST	/api/conversations/:id/send-media	Gửi file/media
+GET/POST/PUT/DELETE	/api/labels	Quản lý nhãn
+GET/POST/DELETE	/api/customers/:id/labels	Nhãn của khách
+GET/POST/PUT/DELETE	/api/quickreplies	Quản lý quick reply
+POST	/api/translate	Dịch text
+GET	/api/health	API health + socket clients
+Socket.IO Events
+Event	Hướng	Mô tả
+new_message	Server → Client	Tin nhắn/comment mới
+message_sent	Server → Client	Admin vừa gửi tin
+connected	Server → Client	Xác nhận kết nối
+ping/pong	Client ↔ Server	Keep-alive
+DATABASE (PostgreSQL)
+Bảng chính
+Copycustomers          -- Khách hàng Facebook
+messages           -- Lịch sử tin nhắn (có cột message_type: 'message'/'comment')
+labels             -- Nhãn phân loại
+customer_labels    -- Khách ↔ Nhãn (many-to-many)
+quick_replies      -- Câu trả lời nhanh (có text_vi và text_en)
+conversation_threads     -- Thread Telegram (legacy, không dùng)
+conversation_mappings    -- Mapping Telegram (legacy, không dùng)
+pending_messages         -- Tin chờ xác nhận (legacy, không dùng)
+Cột quan trọng trong messages
+Copysender_type    VARCHAR  -- 'customer' hoặc 'admin'
+message_type   VARCHAR  -- 'message' hoặc 'comment'
+translated_text TEXT    -- Bản dịch tiếng Việt (nếu có)
+media_url      TEXT     -- URL media HOẶC comment_id (khi message_type='comment')
+FRONTEND (/root/dashboard/)
+Tech Stack
+React 19
+Tailwind CSS
+Socket.IO Client
+Axios
+React Router DOM 7
+File .env
+REACT_APP_API_URL=https://abcfb.site
+Components chính
+Dashboard.jsx — Layout chính, quản lý socket, danh sách hội thoại
+ChatWindow.jsx — Cửa sổ chat, gửi tin, hiển thị tag [COMMENT]
+Sidebar.jsx — Danh sách khách, filter, search
+LabelManager.jsx — Quản lý nhãn
+QuickReplyManager.jsx — Quản lý quick reply
+socket.js — Socket.IO service wrapper
+api.js — Centralized API calls
+offlineQueue.js — Queue tin nhắn khi mất mạng
+NGINX CONFIG
+/etc/nginx/sites-available/botmes
+- / → serve /root/dashboard/build (React SPA)
+- /api/ → proxy localhost:3000
+- /socket.io/ → proxy localhost:3000 (WebSocket)
+- /facebook/ → proxy localhost:3000
+- /health → proxy localhost:3000
+- SSL: Let's Encrypt (auto-renew)
+LỆNH QUẢN LÝ THƯỜNG DÙNG
+Copy# Xem trạng thái app
+pm2 status
+
+# Xem log realtime
+pm2 logs botmes-api
+
+# Restart backend
+pm2 restart botmes-api
+
+# Upload code mới từ PC (PowerShell)
+scp -i D:\Bot_Mes\vps.pem D:\Bot_Mes\fb-telegram-bot\index.js root@47.84.186.244:/root/app/
+
+# Build lại frontend
+cd /root/dashboard && npm run build
+
+# Reload Nginx
+systemctl reload nginx
+
+# Vào PostgreSQL
+sudo -u postgres psql -d botmes
+TRẠNG THÁI HIỆN TẠI
+✅ Backend chạy, nhận tin nhắn Messenger
+✅ Dashboard hiển thị tại https://abcfb.site
+✅ Facebook Webhook đã kết nối
+✅ SSL HTTPS hoạt động
+⏳ Đang cập nhật: tính năng bình luận + dịch tự động (backend đã xong, chưa upload file mới nhất)
