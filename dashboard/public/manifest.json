@@ -1,0 +1,47 @@
+{
+  "short_name": "FB Dashboard",
+  "name": "Facebook Dashboard Manager",
+  "description": "Quản lý tin nhắn Facebook Messenger",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0084ff",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "categories": ["business", "productivity"],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "type": "image/png",
+      "sizes": "1080x1920",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tin nhắn mới",
+      "short_name": "New",
+      "description": "Xem tin nhắn mới",
+      "url": "/",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    }
+  ]
+}

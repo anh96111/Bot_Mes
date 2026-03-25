@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#0084ff" />
+    <meta name="description" content="Facebook Dashboard - Quản lý tin nhắn" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="FB Dashboard">
+    <link rel="apple-touch-icon" sizes="192x192" href="%PUBLIC_URL%/logo192.png">
+    
+    <!-- Splash Screens iOS -->
+    <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/logo512.png">
+    
+    <title>FB Dashboard</title>
+    
+    <!-- Eruda Console for Mobile Debug -->
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>
+      if (/mobile|android|iphone/i.test(navigator.userAgent)) {
+        // Comment dòng này khi production
+        // eruda.init();
+      }
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
